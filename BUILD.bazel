@@ -1,0 +1,118 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+# Upstream build modeled after upstream/jxrlib/Makefile:
+# - libjpegxr.{a,so}: codec core (sys + encode + decode)
+# - libjxrglue.{a,so}: glue + test helpers
+# - JxrEncApp / JxrDecApp: small CLI tools
+
+_JXR_COPTS = [
+    "-D__ANSI__",
+    "-DDISABLE_PERF_MEASUREMENT",
+    # Upstream Makefile uses -w; keep it to avoid warning-only failures across toolchains.
+    "-w",
+    # Clang 16+ promotes -Wincompatible-pointer-types to a hard error in C;
+    # downgrade so -w can suppress it for this legacy codebase.
+    "-Wno-error=incompatible-pointer-types",
+]
+
+_JXR_INCLUDES = [
+    "common/include",
+    "image/sys",
+    "image/encode",
+    "image/decode",
+    "image/x86",
+    "jxrgluelib",
+    "jxrtestlib",
+]
+
+cc_library(
+    name = "jpegxr",
+    srcs = [
+        # image/sys
+        "image/sys/adapthuff.c",
+        "image/sys/image.c",
+        "image/sys/strcodec.c",
+        "image/sys/strPredQuant.c",
+        "image/sys/strTransform.c",
+        # image/decode
+        "image/decode/decode.c",
+        "image/decode/postprocess.c",
+        "image/decode/segdec.c",
+        "image/decode/strdec.c",
+        "image/decode/strInvTransform.c",
+        "image/decode/strPredQuantDec.c",
+        "image/decode/JXRTranscode.c",
+        # image/encode
+        "image/encode/encode.c",
+        "image/encode/segenc.c",
+        "image/encode/strenc.c",
+        "image/encode/strFwdTransform.c",
+        "image/encode/strPredQuantEnc.c",
+    ],
+    hdrs = glob([
+        "common/include/*.h",
+        "image/**/*.h",
+    ]),
+    copts = _JXR_COPTS,
+    includes = _JXR_INCLUDES,
+    # Upstream links -lm into the CLI tools; exporting it here makes consumers simpler.
+    linkopts = ["-lm"],
+)
+
+cc_library(
+    name = "jxrglue",
+    srcs = [
+        # jxrgluelib
+        "jxrgluelib/JXRGlue.c",
+        "jxrgluelib/JXRMeta.c",
+        "jxrgluelib/JXRGluePFC.c",
+        "jxrgluelib/JXRGlueJxr.c",
+        # jxrtestlib (these are built into libjxrglue in upstream Makefile)
+        "jxrtestlib/JXRTest.c",
+        "jxrtestlib/JXRTestBmp.c",
+        "jxrtestlib/JXRTestHdr.c",
+        "jxrtestlib/JXRTestPnm.c",
+        "jxrtestlib/JXRTestTif.c",
+        "jxrtestlib/JXRTestYUV.c",
+    ],
+    hdrs = [
+        "jxrgluelib/JXRGlue.h",
+        "jxrgluelib/JXRMeta.h",
+        "jxrtestlib/JXRTest.h",
+    ],
+    copts = _JXR_COPTS,
+    includes = _JXR_INCLUDES,
+    linkopts = ["-lm"],
+    deps = [":jpegxr"],
+)
+
+cc_binary(
+    name = "JxrEncApp",
+    srcs = ["jxrencoderdecoder/JxrEncApp.c"],
+    copts = _JXR_COPTS,
+    includes = _JXR_INCLUDES,
+    linkopts = ["-lm"],
+    deps = [":jxrglue"],
+)
+
+cc_binary(
+    name = "JxrDecApp",
+    srcs = ["jxrencoderdecoder/JxrDecApp.c"],
+    copts = _JXR_COPTS,
+    includes = _JXR_INCLUDES,
+    linkopts = ["-lm"],
+    deps = [":jxrglue"],
+)
+
+# Aggregate target so consumers can write the short form `@jxrlib`.
+cc_library(
+    name = "jxrlib",
+    deps = [
+        ":jpegxr",
+        ":jxrglue",
+    ],
+)
