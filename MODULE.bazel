@@ -1,0 +1,18 @@
+"""Tiny bzlmod wrapper around the vendored jxrlib (JPEG XR reference impl).
+
+Consumers reference this as `@jxrlib//:jxrlib`, `@jxrlib//:jpegxr`, or
+`@jxrlib//:jxrglue`. Provided via `local_path_override` from the surrounding
+root MODULE.bazel.
+
+The MODULE.bazel sits next to the C sources so the same file is reachable
+both in the aiforoncology monorepo (where the sources live at
+`third_party/jxrlib/upstream/jxrlib/`) and in the standalone NKI-AI/fastslide
+checkout
+"""
+
+module(
+    name = "jxrlib",
+    version = "1.1.0",
+)
+
+bazel_dep(name = "rules_cc", version = "0.2.17")
