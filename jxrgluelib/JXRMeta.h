@@ -125,8 +125,10 @@
 #define WMP_valCompression 0xbc
 #define WMP_valWMPhotoID WMP_valCompression
 
-#ifdef WIN32
+#ifndef __in_win
 #define __in_win __in
+#endif
+#ifndef __out_win
 #define __out_win __out
 #endif
 

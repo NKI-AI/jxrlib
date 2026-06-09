@@ -121,6 +121,17 @@ typedef unsigned __int64 U64;
 #define UINTPTR_T unsigned int
 #define INTPTR_T int
 #endif
+#elif defined(_MSC_VER)
+// MSVC does not define __SIZEOF_POINTER__; derive the pointer width from _WIN64.
+#undef UINTPTR_T
+#undef INTPTR_T
+#if defined(_WIN64)
+#define UINTPTR_T unsigned long long
+#define INTPTR_T long long
+#else
+#define UINTPTR_T unsigned int
+#define INTPTR_T int
+#endif
 #endif
 
 // The following macros depend on UINTPTR_T and INTPTR_T being properly defined
