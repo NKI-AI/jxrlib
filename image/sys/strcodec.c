@@ -989,9 +989,9 @@ ERR detach_SB(SimpleBitIO* pSB) {
 //================================================================
 // Memory access functions
 //================================================================
-#if (defined(WIN32) && !defined(UNDER_CE)) || \
+#if (defined(_WIN32) && !defined(UNDER_CE)) || \
     (defined(UNDER_CE) && defined(_ARM_))
-// WinCE ARM and Desktop x86
+// MSVC (any arch) and WinCE ARM: _byteswap_ulong is a compiler intrinsic
 #else
 // other platform
 #ifdef _BIG__ENDIAN_

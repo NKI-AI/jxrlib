@@ -64,12 +64,14 @@ typedef struct tagPKRect {
 //================================================================
 typedef U32 PKIID;
 
-EXTERN_C const PKIID IID_PKImageScanEncode;
-EXTERN_C const PKIID IID_PKImageFrameEncode;
+// Use an explicit `extern` (not EXTERN_C) so these are pure declarations under
+// MSVC; otherwise the definitions in JXRGlue.c are flagged as redefinitions.
+extern const PKIID IID_PKImageScanEncode;
+extern const PKIID IID_PKImageFrameEncode;
 
-EXTERN_C const PKIID IID_PKImageWmpEncode;
+extern const PKIID IID_PKImageWmpEncode;
 
-EXTERN_C const PKIID IID_PKImageWmpDecode;
+extern const PKIID IID_PKImageWmpDecode;
 
 struct IFDEntry {
   U16 uTag;
